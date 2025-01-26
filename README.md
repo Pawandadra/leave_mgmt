@@ -8,11 +8,9 @@
 - [Installation Guide](#installation-guide)
 - [Configuration](#configuration)
 - [Database Schema](#database-schema)
-- [API Endpoints](#api-endpoints)
 - [Usage](#usage)
 - [Deployment](#deployment)
 - [Security Considerations](#security-considerations)
-- [Future Improvements](#future-improvements)
 
 ---
 
@@ -198,4 +196,4 @@ pm2 startup
 
 **Maintainers:**
 - Project Owner: Pawan Kumar
-- Contact: [Gmail](mailto:pawankumarpk3610@gmail.com)
+- Contact: pawankumarpk3610@gmail.com
