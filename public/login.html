@@ -1,0 +1,65 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Login</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            text-align: center;
+            margin-top: 100px;
+        }
+
+        .container {
+            width: 300px;
+            margin: auto;
+        }
+
+        input,
+        button {
+            width: 100%;
+            padding: 10px;
+            margin-top: 10px;
+        }
+    </style>
+</head>
+
+<body>
+    <div class="container">
+        <h2>Login</h2>
+        <input type="text" id="username" placeholder="Username">
+        <input type="password" id="password" placeholder="Password">
+        <button onclick="login()">Login</button>
+        <p id="message" style="color: red;"></p>
+    </div>
+
+    <script>
+        function login() {
+            const username = document.getElementById('username').value;
+            const password = document.getElementById('password').value;
+
+            fetch('/leave_mgmt/login', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                credentials: 'include',  // Ensure cookies are sent with the request
+                body: JSON.stringify({ username, password })
+            })
+                .then(response => {
+                    if (!response.ok) {
+                        throw new Error('Invalid credentials');
+                    }
+                    return response.json();
+                })
+                .then(() => {
+                    window.location.href = '/leave_mgmt/dashboard';
+                })
+                .catch(err => {
+                    document.getElementById('message').innerText = 'Login failed: ' + err.message;
+                });
+        }
+    </script>
+</body>
+
+</html>
