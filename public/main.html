@@ -20,6 +20,7 @@
                 <th>Faculty Name</th>
                 <th>Designation</th>
                 <th>Short Leaves</th>
+		<th>Half Day Leaves</th>
                 <th>Casual Leaves</th>
                 <th>Academic Leaves</th>
                 <th>Medical Leaves</th>
@@ -54,6 +55,13 @@
         </select>
         <button id="add-faculty-button">Add Faculty</button>
     </div>
+
+    <div>
+        <input type="text" id="faculty-search" placeholder="Search faculty (e.g., John Doe (Professor))" />
+        <button id="delete-faculty-btn" disabled>Delete</button>
+    </div>
+    <ul id="suggestions-list" style="list-style: none; padding: 0;"></ul>
+
     <button id="logout-button">Logout</button>
     <script src="/leave_mgmt/script.js"></script>
 </body>

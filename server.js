@@ -80,7 +80,7 @@ const authenticateSession = (req, res, next) => {
   next();
 };
 
-const validLeaveCategories = ['casual_leaves', 'academic_leaves', 'medical_leaves', 'compensatory_leaves', 'other_leaves', 'short_leaves'];
+const validLeaveCategories = ['half_day_leaves', 'casual_leaves', 'academic_leaves', 'medical_leaves', 'compensatory_leaves', 'other_leaves', 'short_leaves'];
 
 // Serve dashboard after authentication
 app.get('/leave_mgmt/dashboard', authenticateSession, (req, res) => {
@@ -96,6 +96,7 @@ app.get('/leave_mgmt/get-leaves', authenticateSession, async (req, res) => {
                 faculty.faculty_name, 
                 faculty.designation, 
                 SUM(CASE WHEN leave_category = 'short_leaves' THEN 1 ELSE 0 END) AS short_leaves,
+		SUM(CASE WHEN leave_category = 'half_day_leaves' THEN 1 ELSE 0 END) AS half_day_leaves,
                 SUM(CASE WHEN leave_category = 'casual_leaves' THEN 1 ELSE 0 END) AS casual_leaves,
                 SUM(CASE WHEN leave_category = 'academic_leaves' THEN 1 ELSE 0 END) AS academic_leaves,
                 SUM(CASE WHEN leave_category = 'medical_leaves' THEN 1 ELSE 0 END) AS medical_leaves,
@@ -184,6 +185,21 @@ app.post('/leave_mgmt/add-leave', authenticateSession, async (req, res) => {
         },
       });
 
+    } else if (leave_category === 'half_day_leaves') {
+      // Handle half-day leave
+      await connection.query(`
+        INSERT INTO leaves (faculty_id, leave_category, leave_date)
+        VALUES (?, ?, ?);
+      `, [faculty_id, leave_category, leave_date]);
+    
+      await connection.query(`
+        UPDATE faculty
+        SET total_leaves = total_leaves + 0.5
+        WHERE id = ?;
+      `, [faculty_id]);
+    
+      await connection.commit();
+      return res.json({ status: 'success' });
     } else {
       // Handle other leave categories
       await connection.query(`
@@ -224,6 +240,54 @@ app.post('/leave_mgmt/add-faculty', authenticateSession, async (req, res) => {
   } catch (err) {
     console.error(err);
     res.status(500).json({ error: 'Failed to add faculty' });
+  }
+});
+
+// Route: Get faculty suggestions based on input
+app.get('/leave_mgmt/faculty-suggestions', async (req, res) => {
+  const { search } = req.query;
+  try {
+    const [rows] = await pool.query(`
+      SELECT id, faculty_name, designation 
+      FROM faculty
+      WHERE CONCAT(faculty_name, ' (', designation, ')') LIKE ?
+      ORDER BY designation, faculty_name;
+    `, [`%${search}%`]);
+
+    const suggestions = rows.map(faculty => ({
+      id: faculty.id,
+      display: `${faculty.faculty_name} (${faculty.designation})`
+    }));
+
+    res.json(suggestions);
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ error: 'Failed to fetch faculty suggestions' });
+  }
+});
+
+// Route: Delete faculty and related records
+app.delete('/leave_mgmt/delete-faculty/:id', authenticateSession, async (req, res) => {
+  const { id } = req.params;
+  let connection;
+  try {
+    connection = await pool.getConnection();
+    await connection.beginTransaction();
+
+    // Delete from `leaves` table
+    await connection.query('DELETE FROM leaves WHERE faculty_id = ?', [id]);
+
+    // Delete from `faculty` table
+    await connection.query('DELETE FROM faculty WHERE id = ?', [id]);
+
+    await connection.commit();
+    res.json({ success: true, message: 'Faculty and related records deleted successfully.' });
+  } catch (err) {
+    if (connection) await connection.rollback();
+    console.error(err);
+    res.status(500).json({ error: 'Failed to delete faculty.' });
+  } finally {
+    if (connection) connection.release();
   }
 });
 
@@ -310,5 +374,5 @@ app.post('/leave_mgmt/logout', (req, res) => {
 
 // Start server
 app.listen(port, () => {
-  console.log(`Server running on http://localhost:${port}/leave_mgmt`)
+  console.log(`Server running on https://localhost:${port}/leave_mgmt`)
 });

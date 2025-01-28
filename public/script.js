@@ -1,4 +1,18 @@
 document.addEventListener('DOMContentLoaded', () => {
+    const designationPriority = {
+        'Professor': 1,
+        'Associate Professor': 2,
+        'Assistant Professor': 3,
+        'Clerk': 4,
+        'Lab Technician': 5,
+        'Lab Attendant': 6,
+        'Attendant': 7
+    };
+
+    // Function to remove prefixes from faculty names
+    function removePrefixes(name) {
+        return name.replace(/^(Er\.|Dr\.|Mr\.|Ms\.|Prof\.|S\.|Er|Dr|Mr|Ms|Prof|S)\s*/i, '').trim();
+    }
 
     // Function to load table data
     function loadTableData() {  // API call to fetch all faculty leave data
@@ -10,23 +24,34 @@ document.addEventListener('DOMContentLoaded', () => {
                     console.error(responseData);
                     return;
                 }
+
+		// Sort data by designation priority
+                responseData.sort((a, b) => {
+                    const designationComparison = designationPriority[a.designation] - designationPriority[b.designation];
+                    if (designationComparison === 0) {
+                        return removePrefixes(a.faculty_name).localeCompare(removePrefixes(b.faculty_name));
+                    }
+                    return designationComparison;
+                });
+
                 const tbody = document.getElementById('leave-table'); // Table body reference
                 tbody.innerHTML = ''; // Clear table content
-                responseData.forEach(row => {
-                    tbody.innerHTML += generateRowHTML(row); // Add rows dynamically
+                responseData.forEach((row, index) => {
+                    tbody.innerHTML += generateRowHTML(row, index + 1); // Pass serial number as index + 1
                 });
             })
             .catch(error => showError('Error fetching data: ' + error.message));
     }
 
     // Function to generate row HTML for each faculty
-    function generateRowHTML(row) {
+    function generateRowHTML(row, serialNumber) {
         return `
             <tr data-id="${row.id}">
-                <td>${row.id}</td>
+                <td>${serialNumber}</td>
                 <td>${row.faculty_name}</td>
                 <td>${row.designation}</td>
                 <td>${row.short_leaves || 0}</td>
+		<td>${row.half_day_leaves || 0}</td>
                 <td>${row.casual_leaves || 0}</td>
                 <td>${row.academic_leaves || 0}</td>
                 <td>${row.medical_leaves || 0}</td>
@@ -44,6 +69,7 @@ document.addEventListener('DOMContentLoaded', () => {
                     <select class="leave-category">
                         <option value="" disabled selected>Select Leave Category</option>
                         <option value="short_leaves">Short Leave</option>
+			<option value="half_day_leaves">Half Day Leave</option>
                         <option value="casual_leaves">Casual Leave</option>
                         <option value="academic_leaves">Academic Leave</option>
                         <option value="medical_leaves">Medical Leave</option>
@@ -178,5 +204,71 @@ document.addEventListener('DOMContentLoaded', () => {
                 loadTableData(); // Refresh table
             })
             .catch(error => showError('Failed to add faculty: ' + error.message));
+    });
+
+    const searchInput = document.getElementById('faculty-search');
+    const deleteBtn = document.getElementById('delete-faculty-btn');
+    const suggestionsList = document.getElementById('suggestions-list');
+
+    let selectedFacultyId = null;
+
+    // Fetch suggestions as user types
+    searchInput.addEventListener('input', async () => {
+        const searchQuery = searchInput.value.trim();
+        if (searchQuery.length === 0) {
+            suggestionsList.innerHTML = '';
+            deleteBtn.disabled = true;
+            selectedFacultyId = null;
+            return;
+        }
+
+        try {
+            const response = await fetch(`/leave_mgmt/faculty-suggestions?search=${searchQuery}`);
+            const suggestions = await response.json();
+
+            suggestionsList.innerHTML = suggestions
+                .map(suggestion => `<li data-id="${suggestion.id}" style="cursor: pointer;">${suggestion.display}</li>`)
+                .join('');
+
+            // Add click event for each suggestion
+            Array.from(suggestionsList.children).forEach(item => {
+                item.addEventListener('click', () => {
+                    searchInput.value = item.textContent;
+                    selectedFacultyId = item.getAttribute('data-id');
+                    deleteBtn.disabled = false;
+                    suggestionsList.innerHTML = '';
+                });
+            });
+        } catch (err) {
+            console.error('Error fetching suggestions:', err);
+        }
+    });
+
+    // Delete faculty
+    deleteBtn.addEventListener('click', async () => {
+        if (!selectedFacultyId) return;
+
+        const confirmation = confirm('Are you sure you want to delete this faculty and all their records?');
+        if (!confirmation) return;
+
+        try {
+            const response = await fetch(`/leave_mgmt/delete-faculty/${selectedFacultyId}`, {
+                method: 'DELETE',
+            });
+
+            const result = await response.json();
+            if (result.success) {
+                alert('Faculty deleted successfully.');
+                loadTableData();
+                searchInput.value = '';
+                deleteBtn.disabled = true;
+                selectedFacultyId = null;
+            } else {
+                alert(result.error || 'Failed to delete faculty.');
+            }
+        } catch (err) {
+            console.error('Error deleting faculty:', err);
+            alert('An error occurred while deleting the faculty.');
+        }
     });
 });
