@@ -200,18 +200,27 @@ app.post('/leave_mgmt/add-leave', authenticateSession, async (req, res) => {
     
       await connection.commit();
       return res.json({ status: 'success' });
+    } else if (leave_category === 'casual_leaves') {
+      // Handle half-day leave
+      await connection.query(`
+        INSERT INTO leaves (faculty_id, leave_category, leave_date)
+        VALUES (?, ?, ?);
+      `, [faculty_id, leave_category, leave_date]);
+    
+      await connection.query(`
+        UPDATE faculty
+        SET total_leaves = total_leaves + 1
+        WHERE id = ?;
+      `, [faculty_id]);
+    
+      await connection.commit();
+      return res.json({ status: 'success' });
     } else {
       // Handle other leave categories
       await connection.query(`
         INSERT INTO leaves (faculty_id, leave_category, leave_date)
         VALUES (?, ?, ?);
       `, [faculty_id, leave_category, leave_date]);
-
-      await connection.query(`
-        UPDATE faculty
-        SET total_leaves = total_leaves + 1
-        WHERE id = ?;
-      `, [faculty_id]);
 
       await connection.commit();
       return res.json({ status: 'success' });
@@ -295,11 +304,12 @@ app.delete('/leave_mgmt/delete-faculty/:id', authenticateSession, async (req, re
 app.get('/leave_mgmt/leave-details/:id', authenticateSession, async (req, res) => {
   const { id } = req.params;
   try {
-    const [facultyRows] = await pool.query(`
-          SELECT faculty_name, designation, total_leaves 
-          FROM faculty 
-          WHERE id = ?
-      `, [id]);
+    const [facultyRows] = await pool.query(
+      `SELECT faculty_name, designation, total_leaves 
+       FROM faculty 
+       WHERE id = ?`,
+      [id]
+    );
 
     if (facultyRows.length === 0) {
       res.status(404).send('Faculty not found');
@@ -308,58 +318,132 @@ app.get('/leave_mgmt/leave-details/:id', authenticateSession, async (req, res) =
 
     const faculty = facultyRows[0];
 
-    const [leaveRows] = await pool.query(`
-      SELECT leave_category, DATE_FORMAT(leave_date, '%d-%m-%Y') AS formatted_date
-      FROM leaves
-      WHERE faculty_id = ?
-      ORDER BY leave_date DESC;
-  `, [id]);
+    const [leaveRows] = await pool.query(
+      `SELECT id AS leave_id, leave_category, DATE_FORMAT(leave_date, '%d-%m-%Y') AS formatted_date
+       FROM leaves
+       WHERE faculty_id = ?
+       ORDER BY leave_date DESC`,
+      [id]
+    );
 
     // Function to format leave category names properly
     function formatLeaveCategory(category) {
       return category
-        .replace(/_/g, ' ')  // Replace underscores with spaces
-        .replace(/\b\w/g, char => char.toUpperCase())  // Capitalize each word
-        .replace(/\bLeaves\b/i, 'Leave');
+        .replace(/_/g, ' ') // Replace underscores with spaces
+        .replace(/\b\w/g, char => char.toUpperCase()) // Capitalize each word
+        .replace(/\bLeaves\b/i, 'Leave')
+        .replace(/\bCasual Leave\b/i, 'Full Day Leave');
     }
 
-    let leaveTableRows = leaveRows.map(row =>
-      `<tr><td>${formatLeaveCategory(row.leave_category)}</td><td>${row.formatted_date}</td></tr>`
-    ).join('');
+    let leaveTableRows = leaveRows.map(row => `
+      <tr>
+        <td>${formatLeaveCategory(row.leave_category)}</td>
+        <td>${row.formatted_date}</td>
+        <td>
+          <form action="/leave_mgmt/delete-leave/${row.leave_id}" method="POST" style="display:inline;" onsubmit="return confirmDelete()">
+            <button type="submit" style="color: red;">Delete</button>
+          </form>
+        </td>
+      </tr>
+    `).join('');
 
     if (leaveTableRows.length === 0) {
-      leaveTableRows = '<tr><td colspan="2" style="text-align:center;">No leave records found</td></tr>';
+      leaveTableRows = '<tr><td colspan="3" style="text-align:center;">No leave records found</td></tr>';
     }
 
     res.send(`
-          <!DOCTYPE html>
-          <html lang="en">
-          <head>
-              <meta charset="UTF-8">
-              <meta name="viewport" content="width=device-width, initial-scale=1.0">
-              <title>Leave Details</title>
-              <style>
-                  table { width: 50%; border-collapse: collapse; margin: 20px auto; }
-                  th, td { border: 1px solid black; padding: 8px; text-align: left; }
-                  th { background-color: #f2f2f2; }
-                  h2, .total { text-align: center; }
-                  .back-btn { display: block; text-align: center; margin-top: 20px; }
-              </style>
-          </head>
-          <body>
-              <h2>Leave Details for ${faculty.faculty_name} (${faculty.designation})</h2>
-              <table>
-                  <tr><th>Leave Category</th><th>Date</th></tr>
-                  ${leaveTableRows}
-              </table>
-              <h3 class="total">Total Leaves: ${faculty.total_leaves}</h3>
-              <a class="back-btn" href="/leave_mgmt/dashboard">Back to Dashboard</a>
-          </body>
-          </html>
-      `);
+      <!DOCTYPE html>
+      <html lang="en">
+      <head>
+          <meta charset="UTF-8">
+          <meta name="viewport" content="width=device-width, initial-scale=1.0">
+          <title>Leave Details</title>
+          <style>
+              table { width: 60%; border-collapse: collapse; margin: 20px auto; }
+              th, td { border: 1px solid black; padding: 8px; text-align: left; }
+              th { background-color: #f2f2f2; }
+              h2, .total { text-align: center; }
+              .back-btn { display: block; text-align: center; margin-top: 20px; }
+          </style>
+      </head>
+      <body>
+          <h2>Leave Details for ${faculty.faculty_name} (${faculty.designation})</h2>
+          <table>
+              <tr><th>Leave Category</th><th>Date</th><th>Actions</th></tr>
+              ${leaveTableRows}
+          </table>
+          <h3 class="total">Total Leaves: ${faculty.total_leaves}</h3>
+          <a class="back-btn" href="/leave_mgmt/dashboard">Back to Dashboard</a>
+      </body>
+      <script>
+        function confirmDelete() {
+          return confirm('Are you sure you want to delete this leave?');
+        }
+      </script>
+      </html>
+    `);
   } catch (err) {
     console.error(err);
     res.status(500).send('Error retrieving leave details');
+  }
+});
+
+// Route: Delete a leave record
+app.post('/leave_mgmt/delete-leave/:leaveId', authenticateSession, async (req, res) => {
+  const { leaveId } = req.params;
+  let connection;
+  try {
+    connection = await pool.getConnection();
+    await connection.beginTransaction();
+
+    // Retrieve leave details for adjustment
+    const [leaveDetails] = await connection.query(
+      'SELECT leave_category, faculty_id FROM leaves WHERE id = ?',
+      [leaveId]
+    );
+
+    if (leaveDetails.length === 0) {
+      await connection.rollback();
+      res.status(404).json({ error: 'Leave record not found.' });
+      return;
+    }
+
+    const { leave_category, faculty_id } = leaveDetails[0];
+
+    // Delete from `leaves` table
+    const [result] = await connection.query('DELETE FROM leaves WHERE id = ?', [leaveId]);
+
+    if (result.affectedRows === 0) {
+      await connection.rollback();
+      res.status(404).json({ error: 'Failed to delete leave record.' });
+      return;
+    }
+
+    // Adjust total leaves based on leave category
+    let adjustment = 0;
+    if (leave_category === 'short_leaves') {
+      adjustment = -0.33;
+    } else if (leave_category === 'half_day_leaves') {
+      adjustment = -0.5;
+    } else if (leave_category === 'casual_leaves') {
+      adjustment = -1;
+    }
+
+    if (adjustment !== 0) {
+      await connection.query(
+        'UPDATE faculty SET total_leaves = total_leaves + ? WHERE id = ?',
+        [adjustment, faculty_id]
+      );
+    }
+
+    await connection.commit();
+    res.redirect(`/leave_mgmt/leave-details/${faculty_id}`);
+  } catch (err) {
+    if (connection) await connection.rollback();
+    console.error(err);
+    res.status(500).json({ error: 'Failed to delete leave record.' });
+  } finally {
+    if (connection) connection.release();
   }
 });
 
