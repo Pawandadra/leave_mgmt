@@ -1,0 +1,178 @@
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+  font-family: "Arial", sans-serif;
+}
+
+body {
+  background-color: #f9f9f9;
+  color: #333;
+  line-height: 1.6;
+}
+
+/* Header Styling */
+.leaveHeader {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  background-color: #013a63;
+  color: #fff;
+  padding: 20px;
+  border-bottom: 4px solid #01497c;
+}
+
+.leaveHeadleft img {
+  width: 150px;
+  height: auto;
+  /* background: radial-gradient(
+    circle,
+    rgb(255, 255, 255),
+    rgb(244, 250, 255),
+    rgb(13, 58, 99)
+  ); */
+  filter: drop-shadow(0 0 0.35rem rgb(244, 250, 255));
+  border-radius: 50%;
+}
+
+.leaveHeadData h2 {
+  text-align: center;
+  margin: 0;
+}
+
+.leaveHeadRight button {
+  padding: 10px 20px;
+  background-color: #dc3545;
+  border: none;
+  border-radius: 4px;
+  color: #fff;
+  cursor: pointer;
+  font-size: 14px;
+  transition: background-color 0.3s ease;
+}
+
+.leaveHeadRight button:hover {
+  background-color: #c82333;
+}
+.generatingReport {
+  height: 5em;
+  display: flex;
+  justify-content: space-evenly;
+  align-items: center;
+}
+/* Generate Report Button Styling */
+#report {
+  margin: 20px;
+  width: 150px;
+  height: 3.5em;
+  padding: 20px;
+  background-color: #28a745;
+  border: none;
+  border-radius: 4px;
+  color: #fff;
+  cursor: pointer;
+  font-size: 14px;
+  transition: background-color 0.3s ease;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+#report:hover {
+  background-color: #218838;
+}
+.insidelabel {
+  font-size: 15px;
+  margin-left: 20px;
+  padding: 2px;
+}
+.leave-date {
+  height: 2em;
+  font-size: 15px;
+  padding-left: 2px;
+}
+.date {
+  width: 500px;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+.select-range {
+  align-items: center;
+  padding: 10px;
+  border-radius: 5%;
+  background-image: linear-gradient(to top, #cfd9df 0%, #e2ebf0 100%);
+}
+
+/* Table Styling */
+table {
+  width: 50%;
+  border-collapse: collapse;
+  margin: 20px auto;
+  border: 2px solid black;
+}
+
+th,
+td {
+  border: 1px solid black;
+  padding: 8px;
+  text-align: left;
+}
+
+th {
+  background-color: #0d3a63;
+  color: #f2f2f2;
+  /* padding-left: 18%; */
+  text-align: left;
+  border: 1px solid #f2f2f2;
+}
+
+/* Total Leaves Styling */
+.total,
+.summary {
+  text-align: center;
+  margin: 20px;
+}
+
+/* Back Button Styling */
+.back-btn {
+  display: block;
+  text-align: center;
+  margin-top: 20px;
+  color: #007bff;
+  text-decoration: none;
+}
+
+.back-btn:hover {
+  text-decoration: underline;
+}
+
+.message-box {
+  width: 30rem;
+  height: 7rem;
+  box-shadow: 0rem 0 2rem 1rem rgba(0, 0, 0, 0.15);
+  margin: 0 auto;
+  border-radius: 9px;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
+.message-box p {
+  font-size: 21px;
+  color: #333;
+  font-weight: 700;
+}
+
+.hidden {
+  display: none;
+}
+
+.btn--delete-leave {
+  margin: 0;
+  display: block;
+  padding: 0;
+  height: 30px;
+  font-size: 12px;
+  width: 70%;
+  padding: 5px;
+}

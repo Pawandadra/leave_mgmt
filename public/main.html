@@ -1,0 +1,110 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Faculty Leave Management</title>
+    <link rel="stylesheet" href="/leave_mgmt/styles.css" />
+    <script src="/leave_mgmt/script.js" defer></script>
+  </head>
+
+  <body>
+    <header class="header">
+      <div class="headLeft">
+        <img src="./assets/Img/logo.png" alt="" srcset="" />
+      </div>
+      <div class="headData">
+        <h1>Guru Nanak Dev Engineering College, Ludhiana</h1>
+        <h2>Department of Computer Science and Engineering</h2>
+        <h3>Faculty Leave Management</h3>
+      </div>
+      <div class="headRight">
+        <button id="logout-button">Logout</button>
+      </div>
+    </header>
+    <main>
+      <section id="data">
+        <table class="table-container">
+          <thead>
+            <tr>
+              <th>Sr No</th>
+              <th>Faculty Name</th>
+              <th>Designation</th>
+              <th>Short Leaves</th>
+              <th>Half Day Leaves</th>
+              <th>Full Day Leaves</th>
+              <th>Academic Leaves</th>
+              <th>Medical Leaves</th>
+              <th>Compensatory Leaves</th>
+              <th>Remaining Leaves</th>
+              <th>Granted Leaves</th>
+              <th>Total Leaves</th>
+              <th>Actions</th>
+            </tr>
+          </thead>
+          <tbody id="leave-table"></tbody>
+        </table>
+      </section>
+
+      <!-- Loading spinner -->
+      <div id="loading-spinner" class="spinner">Loading...</div>
+
+      <!-- Messages for errors and success -->
+      <div id="error-message" class="message error"></div>
+
+      <div id="success-message" class="message success"></div>
+
+      <!-- Faculty addition section -->
+      <section class="add-delete-generate">
+        <div id="add_faculty">
+          <div class="addFacultyData">
+            <div id="userInputData">
+              <input
+                type="text"
+                id="new-faculty-name"
+                placeholder="Enter Faculty Name"
+              />
+              <select id="new-faculty-designation">
+                <option value="" disabled selected>Select Designation</option>
+                <option value="Professor">Professor</option>
+                <option value="Associate Professor">Associate Professor</option>
+                <option value="Assistant Professor">Assistant Professor</option>
+                <option value="Clerk">Clerk</option>
+                <option value="Lab Technician">Lab Technician</option>
+                <option value="Lab Attendant">Lab Attendant</option>
+                <option value="Attendant">Attendant</option>
+              </select>
+              <input
+                type="number"
+                id="grantedLeaves"
+                class="input--granted-leaves"
+                placeholder="Enter Granted Leaves"
+              />
+            </div>
+            <button id="add-faculty-button">Add Faculty</button>
+          </div>
+          <div class="facultySearch-delete">
+            <input
+              type="text"
+              id="faculty-search"
+              placeholder="Search faculty (e.g., John Doe (Professor))"
+            />
+            <button id="delete-faculty-btn" disabled>Delete</button>
+          </div>
+        </div>
+
+        <div class="generateReport">
+          <div class="date">
+            <p class="select-range">Select Range :</p>
+            <label class="insidelabel">From: </label>
+            <input type="date" class="addleave-date from-date" />
+            <label class="insidelabel">To:</label>
+            <input type="date" class="addleave-date to-date" />
+          </div>
+          <button class="generate-report">Generate Report</button>
+        </div>
+      </section>
+      <ul id="suggestions-list"></ul>
+    </main>
+  </body>
+</html>
