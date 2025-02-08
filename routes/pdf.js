@@ -56,6 +56,9 @@ router.get("/", async (req, res) => {
       WHERE faculty_id = ${facultyId}
       GROUP BY faculty.id
   `);
+  console.log(facultyId);
+
+  console.log(faculty);
 
   const [leaveData] = await pool.query(
     `SELECT * FROM leaves l
@@ -64,6 +67,12 @@ router.get("/", async (req, res) => {
      AND l.leave_date BETWEEN ? AND ?`,
     [facultyId, sanitizedFromDate, sanitizedToDate]
   );
+
+  if (!faculty || leaveData.length === 0) {
+    return res
+      .status(400)
+      .json({ error: "Bad Request, Faculty and/or leave data do not exist." });
+  }
 
   // Generate Pdf
   const pdfBuffer = await generatePDF(

@@ -187,9 +187,9 @@ async function generatePDF(faculty, leaveData, fromDate, toDate) {
             // Data rows will be added dynamically
             ...leaveData.map((leaveObj) => {
               const leaveType = `${leaveObj.leave_category
-                .split("_")
-                .map((pn) => (pn = pn[0].toUpperCase() + pn.slice(1)))
-                .join(" ")} ${
+                .replace(/_/g, " ")
+                .replace(/\b\w/g, (char) => char.toUpperCase())
+                .replace(/\bCasual Leaves\b/i, "Full Day Leave")} ${
                 ((leaveObj.short_leave_from || leaveObj.half_leave_type) &&
                   `(${
                     leaveObj.half_leave_type
@@ -219,9 +219,9 @@ async function generatePDF(faculty, leaveData, fromDate, toDate) {
           {
             ul: Object.entries(countCategories).map(([key, value]) => {
               const leaveCategory = key
-                .split("_")
-                .map((pn) => pn.charAt(0).toUpperCase() + pn.slice(1))
-                .join(" ");
+                .replace(/_/g, " ")
+                .replace(/\b\w/g, (char) => char.toUpperCase())
+                .replace(/\bCasual Leaves\b/i, "Full Day Leave");
 
               return { text: `${leaveCategory}: ${value}`, fontSize: 12 };
             }),

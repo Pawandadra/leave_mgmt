@@ -38,13 +38,7 @@ async function loadLeaveDetails() {
                     ""
                   }</td>
                 <td>${leave.formatted_date}</td>
-                <td  class="action-cell">${
-                  leave.leave_category === "short_leaves" ||
-                  leave.leave_category === "half_day_leaves" ||
-                  leave.leave_category === "casual_leaves"
-                    ? `<button data-id="${leave.id}" class="btn--delete-leave">Delete</button>`
-                    : ""
-                }</td>
+                <td  class="action-cell">${`<button data-id="${leave.id}" class="btn--delete-leave">Delete</button>`}</td>
               </tr>
             `
       )
@@ -111,25 +105,30 @@ const message = document.querySelector(".message");
 // Generate PDF report
 document.querySelector("#report").addEventListener("click", async (e) => {
   e.preventDefault();
-  const facultyId = window.location.pathname.split("/").pop();
-  const fromDate = document.querySelector(".from-date").value;
-  const toDate = document.querySelector(".to-date").value;
+  try {
+    const facultyId = window.location.pathname.split("/").pop();
+    const fromDate = document.querySelector(".from-date").value;
+    const toDate = document.querySelector(".to-date").value;
 
-  const res = await fetch(
-    `/leave_mgmt/pdf?facultyId=${facultyId}&fromDate=${fromDate}&toDate=${toDate}`,
-    {
-      method: "GET",
+    const res = await fetch(
+      `/leave_mgmt/pdf?facultyId=${facultyId}&fromDate=${fromDate}&toDate=${toDate}`,
+      {
+        method: "GET",
+      }
+    );
+
+    if (!res.ok) {
+      console.log((await res.json()).error);
+      console.log("Failed to create PDF.");
+      return;
     }
-  );
 
-  if (!res.ok) {
-    console.log("Failed to create PDF.");
-    return;
+    const blob = await res.blob();
+    const blobUrl = await URL.createObjectURL(blob);
+    window.open(blobUrl, "_blank");
+  } catch (err) {
+    console.err(err);
   }
-
-  const blob = await res.blob();
-  const blobUrl = await URL.createObjectURL(blob);
-  window.open(blobUrl, "_blank");
 });
 
 const today = new Date();

@@ -128,7 +128,7 @@ th {
 
 /* Total Leaves Styling */
 /* .summary, */
-.total{
+.total {
   text-align: center;
   margin: 20px;
 }
@@ -167,12 +167,26 @@ th {
   display: none;
 }
 
+.action-cell {
+  width: 100%;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  border: none;
+  border-bottom: 1px solid black;
+}
+
+/* Remove bottom border only for the last row */
+tr:last-child .action-cell {
+  border-bottom: none;
+}
+
 .btn--delete-leave {
   margin: 0;
   display: block;
   padding: 0;
   height: 30px;
   font-size: 12px;
-  width: 70%;
-  padding: 5px;
+  width: 50%;
+  /* padding: 0 px; */
 }
