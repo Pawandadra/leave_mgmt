@@ -301,6 +301,11 @@ app.post("/leave_mgmt/add-leave", authenticateSession, async (req, res) => {
       const toDate = new Date(leave_date[1]);
       const days = Math.ceil((toDate - fromDate) / (1000 * 60 * 60 * 24)) + 1;
 
+      if (fromDate > toDate) {
+        return res
+          .status(400)
+          .json({ error: "Bad Request, Invalid Date range." });
+      }
       const leaveInserts = [];
       for (let i = 0; i < days; i++) {
         const newLeaveDate = new Date(fromDate);
