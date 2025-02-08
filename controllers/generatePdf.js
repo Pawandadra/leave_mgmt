@@ -128,10 +128,21 @@ async function generatePDF(faculty, leaveData, fromDate, toDate) {
 
     return acc;
   }, {});
+
   countCategories.total_leaves = Object.entries(countCategories).reduce(
-    (acc, [key, value]) => (acc += value),
+    (acc, [key, value]) => {
+      if (key === "short_leaves") {
+        acc += value % 3 === 0 ? value / 3 : 0.33 * value;
+      } else if (key === "half_day_leaves") {
+        acc += value * 0.5;
+      } else if (key === "casual_leaves") {
+        acc += value;
+      }
+      return acc;
+    },
     0
   );
+
   countCategories.remaining_leaves = faculty.remaining_leaves;
 
   const nonZeroLeaves = Object.entries(faculty)
