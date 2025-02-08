@@ -1,0 +1,55 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Leave Details</title>
+    <link rel="stylesheet" href="/leave_mgmt/leaveDetails.css" />
+    <script defer src="/leave_mgmt/leaveDetails.js"></script>
+  </head>
+
+  <body>
+    <div class="leaveHeader">
+      <div class="leaveHeadleft">
+        <img src="/leave_mgmt/assets/Img/logo.png" alt="College Logo" />
+      </div>
+      <div class="leaveHeadData">
+        <h2>
+          Leave Details for <span id="faculty-name"></span> (<span
+            id="faculty-designation"
+          ></span
+          >)
+        </h2>
+      </div>
+      <div class="leaveHeadRight">
+        <button id="logout-button">Logout</button>
+      </div>
+    </div>
+    <div class="message-box hidden"><p class="message">Loading PDf</p></div>
+    <div class="generatingReport">
+      <div class="date">
+        <p class="select-range">Select Range :</p>
+        <label class="insidelabel">From:</label>
+        <input type="date" class="leave-date from-date" />
+        <label class="insidelabel">To:</label>
+        <input type="date" class="leave-date to-date" />
+      </div>
+      <div>
+        <button id="report">Generate Report</button>
+      </div>
+    </div>
+    <table>
+      <thead>
+        <tr>
+          <th>Leave Category</th>
+          <th>Date</th>
+          <th>Action</th>
+        </tr>
+      </thead>
+      <tbody id="leave-table"></tbody>
+    </table>
+    <div class="summary"></div>
+    <h3 class="total">Total Leaves: <span id="total-leaves"></span></h3>
+    <a class="back-btn" href="/leave_mgmt/dashboard">Back to Dashboard</a>
+  </body>
+</html>
