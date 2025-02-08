@@ -59,18 +59,18 @@ async function loadLeaveDetails() {
 
       return acc;
     }, {});
-    const summary = document.querySelector(".summary");
-    const summaryHtml = Object.entries(countCategories)
-      .map(([key, value]) => {
-        return `<h3>
-        ${key
-          .replace(/_/g, " ")
-          .replace(/\b\w/g, (char) => char.toUpperCase())}: ${value}
-          </h3>`;
-      })
-      .join("");
+    // const summary = document.querySelector(".summary");
+    // const summaryHtml = Object.entries(countCategories)
+    //   .map(([key, value]) => {
+    //     return `<h3>
+    //     ${key
+    //       .replace(/_/g, " ")
+    //       .replace(/\b\w/g, (char) => char.toUpperCase())}: ${value}
+    //       </h3>`;
+    //   })
+    //   .join("");
 
-    summary.innerHTML = summaryHtml;
+    // summary.innerHTML = summaryHtml;
 
     if (data.leaves.length === 0) {
       leaveTable.innerHTML =

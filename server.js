@@ -589,7 +589,7 @@ app.post(
 
       const [rows] = await connection.query(`
         SELECT COUNT(*) AS leave_count FROM leaves WHERE leave_category = 'short_leaves'`);
-      const short_leaves_count = rows[0].leave_count - 1;
+      const short_leaves_count = rows[0].leave_count + 1;
 
       // Adjust total leaves based on leave category
       let adjustment = 0;
@@ -603,8 +603,8 @@ app.post(
 
       if (adjustment !== 0) {
         await connection.query(
-          "UPDATE faculty SET total_leaves = total_leaves + ? WHERE id = ?",
-          [adjustment, faculty_id]
+          "UPDATE faculty SET total_leaves = total_leaves + ?, remaining_leaves = remaining_leaves - ? WHERE id = ?",
+          [adjustment, adjustment, faculty_id]
         );
       }
 

@@ -127,8 +127,8 @@ th {
 }
 
 /* Total Leaves Styling */
-.total,
-.summary {
+/* .summary, */
+.total{
   text-align: center;
   margin: 20px;
 }
