@@ -77,18 +77,26 @@
               <input
                 type="number"
                 id="grantedLeaves"
-                class="input--granted-leaves"
+                class="add-faculty-granted-leaves input--granted-leaves"
                 placeholder="Enter Granted Leaves"
               />
             </div>
             <button id="add-faculty-button">Add Faculty</button>
           </div>
-          <div class="facultySearch-delete">
-            <input
+          <div class="facultySearch-delete search-container">
+            <!-- <input
               type="text"
               id="faculty-search"
               placeholder="Search faculty (e.g., John Doe (Professor))"
+            /> -->
+
+            <input
+              type="text"
+              id="searchInput"
+              class="search-input"
+              placeholder="Search..."
             />
+            <div id="suggestionsBox" class="suggestions"></div>
             <button id="delete-faculty-btn" disabled>Delete</button>
           </div>
         </div>
