@@ -218,7 +218,12 @@ document.addEventListener("DOMContentLoaded", () => {
     fetch("/leave_mgmt/logout", {
       method: "POST",
       credentials: "include", // Ensures session cookies are sent with the request
-      headers: { "Content-Type": "application/json" },
+      headers: {
+        "Content-Type": "application/json",
+        headers: {
+          Authorization: `Bearer ${localStorage.getItem("token")}`,
+        },
+      },
     })
       .then((response) => {
         if (!response.ok) {
@@ -248,7 +253,10 @@ document.addEventListener("DOMContentLoaded", () => {
 
     fetch("/leave_mgmt/add-leave", {
       method: "POST",
-      headers: { "Content-Type": "application/json" },
+      headers: {
+        "Content-Type": "application/json",
+        Authorization: `Bearer ${localStorage.getItem("token")}`,
+      },
       body: JSON.stringify({
         faculty_id: facultyId,
         leave_categoryArr: category,
@@ -359,7 +367,12 @@ document.addEventListener("DOMContentLoaded", () => {
 
     try {
       const response = await fetch(
-        `/leave_mgmt/faculty-suggestions?search=${searchQuery}`
+        `/leave_mgmt/faculty-suggestions?search=${searchQuery}`,
+        {
+          headers: {
+            Authorization: `Bearer ${localStorage.getItem("token")}`,
+          },
+        }
       );
       suggestions = await response.json(); // Store the suggestions in an array
 
@@ -460,7 +473,12 @@ document.addEventListener("DOMContentLoaded", () => {
     try {
       const response = await fetch(
         `/leave_mgmt/delete-faculty/${selectedFacultyId}`,
-        { method: "DELETE" }
+        {
+          method: "DELETE",
+          headers: {
+            Authorization: `Bearer ${localStorage.getItem("token")}`,
+          },
+        }
       );
       const result = await response.json();
 
@@ -511,4 +529,5 @@ document.querySelector(".to-date").value = new Date()
   .toISOString()
   .split("T")[0];
 
-// NEW
+document.querySelector(".heading--department-name").textContent =
+  "Department of " + localStorage.getItem("departmentName");

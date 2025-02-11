@@ -130,6 +130,7 @@
           })
           .then((data) => {
             localStorage.setItem("token", data.token);
+            localStorage.setItem("departmentName", data.departmentName);
             window.location.href = "/leave_mgmt/dashboard";
           })
           .catch((err) => {
