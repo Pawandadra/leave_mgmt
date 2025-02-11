@@ -22,6 +22,8 @@ const pool = mysql
 
 // Route for individual PDF
 router.get("/", async (req, res) => {
+  console.log(req.session.user);
+
   try {
     const defaultFromDate = new Date();
     const today = new Date();
@@ -77,7 +79,7 @@ router.get("/", async (req, res) => {
     const [department] = await pool.query(
       `SELECT * FROM departments
       WHERE department_id = ?`,
-      [req.user.departmentId]
+      [req.session.user.departmentId]
     );
 
     // Generate PDF
@@ -139,7 +141,7 @@ router.get("/all", async (req, res) => {
           faculty.designation DESC,
           REGEXP_REPLACE(faculty.faculty_name, '^(Er\.|Dr\.|Mr\.|Ms\.|Prof\.|S\.|Er|Dr|Mr|Ms|Prof|S)\s*', '') ASC;
     `,
-      [req.user.departmentId]
+      [req.session.user.departmentId]
     );
 
     if (rows.length === 0) {
@@ -149,7 +151,7 @@ router.get("/all", async (req, res) => {
     const [department] = await pool.query(
       `SELECT * FROM departments
       WHERE department_id = ?`,
-      [req.user.departmentId]
+      [req.session.user.departmentId]
     );
 
     // Generate PDFs

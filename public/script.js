@@ -19,13 +19,7 @@ document.addEventListener("DOMContentLoaded", () => {
   // Function to load table data
   function loadTableData() {
     // API call to fetch all faculty leave data
-    console.log(localStorage.getItem("token"));
-
-    fetch("/leave_mgmt/get-leaves", {
-      headers: {
-        Authorization: `Bearer ${localStorage.getItem("token")}`,
-      },
-    })
+    fetch("/leave_mgmt/get-leaves")
       .then((response) => response.json())
       .then((responseData) => {
         if (!Array.isArray(responseData)) {
@@ -218,12 +212,7 @@ document.addEventListener("DOMContentLoaded", () => {
     fetch("/leave_mgmt/logout", {
       method: "POST",
       credentials: "include", // Ensures session cookies are sent with the request
-      headers: {
-        "Content-Type": "application/json",
-        headers: {
-          Authorization: `Bearer ${localStorage.getItem("token")}`,
-        },
-      },
+      headers: { "Content-Type": "application/json" },
     })
       .then((response) => {
         if (!response.ok) {
@@ -253,10 +242,7 @@ document.addEventListener("DOMContentLoaded", () => {
 
     fetch("/leave_mgmt/add-leave", {
       method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-        Authorization: `Bearer ${localStorage.getItem("token")}`,
-      },
+      headers: { "Content-Type": "application/json" },
       body: JSON.stringify({
         faculty_id: facultyId,
         leave_categoryArr: category,
@@ -327,10 +313,7 @@ document.addEventListener("DOMContentLoaded", () => {
 
       fetch("/leave_mgmt/add-faculty", {
         method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-          Authorization: `Bearer ${localStorage.getItem("token")}`,
-        },
+        headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
           faculty_name: facultyName,
           designation: facultyDesignation,
@@ -367,12 +350,7 @@ document.addEventListener("DOMContentLoaded", () => {
 
     try {
       const response = await fetch(
-        `/leave_mgmt/faculty-suggestions?search=${searchQuery}`,
-        {
-          headers: {
-            Authorization: `Bearer ${localStorage.getItem("token")}`,
-          },
-        }
+        `/leave_mgmt/faculty-suggestions?search=${searchQuery}`
       );
       suggestions = await response.json(); // Store the suggestions in an array
 
@@ -473,12 +451,7 @@ document.addEventListener("DOMContentLoaded", () => {
     try {
       const response = await fetch(
         `/leave_mgmt/delete-faculty/${selectedFacultyId}`,
-        {
-          method: "DELETE",
-          headers: {
-            Authorization: `Bearer ${localStorage.getItem("token")}`,
-          },
-        }
+        { method: "DELETE" }
       );
       const result = await response.json();
 
@@ -508,12 +481,8 @@ document
       `/leave_mgmt/pdf/all?fromDate=${fromDate}&toDate=${toDate}`,
       {
         method: "GET",
-        headers: {
-          Authorization: `Bearer ${localStorage.getItem("token")}`,
-        },
       }
     );
-    console.log(localStorage.getItem("token"));
 
     if (!res.ok) console.log("failed to fetch pdf");
 
@@ -530,4 +499,4 @@ document.querySelector(".to-date").value = new Date()
   .split("T")[0];
 
 document.querySelector(".heading--department-name").textContent =
-  "Department of " + localStorage.getItem("departmentName");
+  localStorage.getItem("departmentName");

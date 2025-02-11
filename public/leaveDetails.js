@@ -114,9 +114,6 @@ document.querySelector("#report").addEventListener("click", async (e) => {
       `/leave_mgmt/pdf?facultyId=${facultyId}&fromDate=${fromDate}&toDate=${toDate}`,
       {
         method: "GET",
-        headers: {
-          Authorization: `Bearer ${localStorage.getItem("token")}`,
-        },
       }
     );
 
