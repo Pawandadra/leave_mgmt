@@ -109,7 +109,8 @@ router.get("/all", async (req, res) => {
     const sanitizedToDate = toDate || today.toISOString().split("T")[0];
 
     // Fetching faculty data
-    const [rows] = await pool.query(`
+    const [rows] = await pool.query(
+      `
       SELECT 
           faculty.id, 
           faculty.faculty_name, 
@@ -125,11 +126,14 @@ router.get("/all", async (req, res) => {
           faculty.total_leaves
       FROM faculty
       LEFT JOIN leaves ON faculty.id = leaves.faculty_id
+      WHERE faculty.department_id = ?
       GROUP BY faculty.id
       ORDER BY 
           faculty.designation DESC,
           REGEXP_REPLACE(faculty.faculty_name, '^(Er\.|Dr\.|Mr\.|Ms\.|Prof\.|S\.|Er|Dr|Mr|Ms|Prof|S)\s*', '') ASC;
-    `);
+    `,
+      [req.user.departmentId]
+    );
 
     if (rows.length === 0) {
       return res.status(404).json({ error: "No faculty data found." });

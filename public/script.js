@@ -19,7 +19,13 @@ document.addEventListener("DOMContentLoaded", () => {
   // Function to load table data
   function loadTableData() {
     // API call to fetch all faculty leave data
-    fetch("/leave_mgmt/get-leaves")
+    console.log(localStorage.getItem("token"));
+
+    fetch("/leave_mgmt/get-leaves", {
+      headers: {
+        Authorization: `Bearer ${localStorage.getItem("token")}`,
+      },
+    })
       .then((response) => response.json())
       .then((responseData) => {
         if (!Array.isArray(responseData)) {
@@ -313,7 +319,10 @@ document.addEventListener("DOMContentLoaded", () => {
 
       fetch("/leave_mgmt/add-faculty", {
         method: "POST",
-        headers: { "Content-Type": "application/json" },
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${localStorage.getItem("token")}`,
+        },
         body: JSON.stringify({
           faculty_name: facultyName,
           designation: facultyDesignation,
@@ -481,8 +490,12 @@ document
       `/leave_mgmt/pdf/all?fromDate=${fromDate}&toDate=${toDate}`,
       {
         method: "GET",
+        headers: {
+          Authorization: `Bearer ${localStorage.getItem("token")}`,
+        },
       }
     );
+    console.log(localStorage.getItem("token"));
 
     if (!res.ok) console.log("failed to fetch pdf");
 

@@ -1,141 +1,142 @@
 <!DOCTYPE html>
 <html lang="en">
-
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Login</title>
     <style>
-        /* General Reset */
-        * {
-            margin: 0;
-            padding: 0;
-            box-sizing: border-box;
-        }
+      /* General Reset */
+      * {
+        margin: 0;
+        padding: 0;
+        box-sizing: border-box;
+      }
 
-        /* Body Styling */
-        body {
-            font-family: 'Arial', sans-serif;
-            background-image: linear-gradient(-20deg, #b721ff 0%, #21d4fd 100%);          
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            height: 100vh;
-            color: #333;
-        }
+      /* Body Styling */
+      body {
+        font-family: "Arial", sans-serif;
+        background-image: linear-gradient(-20deg, #b721ff 0%, #21d4fd 100%);
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        height: 100vh;
+        color: #333;
+      }
 
-        /* Container Styling */
+      /* Container Styling */
+      .container {
+        background: #fff;
+        padding: 2rem;
+        border-radius: 10px;
+        box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
+        width: 100%;
+        max-width: 350px;
+        text-align: center;
+      }
+
+      /* Heading Styling */
+      .container h2 {
+        margin-bottom: 1.5rem;
+        font-size: 1.8rem;
+        color: #333;
+      }
+
+      /* Input Fields Styling */
+      .container input {
+        width: 100%;
+        padding: 12px;
+        margin: 10px 0;
+        border: 1px solid #ddd;
+        border-radius: 5px;
+        font-size: 1rem;
+        outline: none;
+        transition: border-color 0.3s ease;
+      }
+
+      .container input:focus {
+        border-color: #6a11cb;
+      }
+
+      /* Button Styling */
+      .container button {
+        width: 100%;
+        padding: 12px;
+        margin-top: 1rem;
+        background: #6a11cb;
+        color: #fff;
+        border: none;
+        border-radius: 5px;
+        font-size: 1rem;
+        cursor: pointer;
+        transition: background 0.3s ease;
+      }
+
+      .container button:hover {
+        background: #2575fc;
+      }
+
+      /* Message Styling */
+      .container #message {
+        margin-top: 1rem;
+        color: #ff4d4d;
+        font-size: 0.9rem;
+      }
+
+      /* Responsive Design */
+      @media (max-width: 480px) {
         .container {
-            background: #fff;
-            padding: 2rem;
-            border-radius: 10px;
-            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
-            width: 100%;
-            max-width: 350px;
-            text-align: center;
+          padding: 1.5rem;
         }
 
-        /* Heading Styling */
         .container h2 {
-            margin-bottom: 1.5rem;
-            font-size: 1.8rem;
-            color: #333;
+          font-size: 1.5rem;
         }
 
-        /* Input Fields Styling */
-        .container input {
-            width: 100%;
-            padding: 12px;
-            margin: 10px 0;
-            border: 1px solid #ddd;
-            border-radius: 5px;
-            font-size: 1rem;
-            outline: none;
-            transition: border-color 0.3s ease;
-        }
-
-        .container input:focus {
-            border-color: #6a11cb;
-        }
-
-        /* Button Styling */
+        .container input,
         .container button {
-            width: 100%;
-            padding: 12px;
-            margin-top: 1rem;
-            background: #6a11cb;
-            color: #fff;
-            border: none;
-            border-radius: 5px;
-            font-size: 1rem;
-            cursor: pointer;
-            transition: background 0.3s ease;
+          padding: 10px;
+          font-size: 0.9rem;
         }
-
-        .container button:hover {
-            background: #2575fc;
-        }
-
-        /* Message Styling */
-        .container #message {
-            margin-top: 1rem;
-            color: #ff4d4d;
-            font-size: 0.9rem;
-        }
-
-        /* Responsive Design */
-        @media (max-width: 480px) {
-            .container {
-                padding: 1.5rem;
-            }
-
-            .container h2 {
-                font-size: 1.5rem;
-            }
-
-            .container input,
-            .container button {
-                padding: 10px;
-                font-size: 0.9rem;
-            }
-        }
+      }
     </style>
-</head>
+  </head>
 
-<body>
+  <body>
     <div class="container">
-        <h2>Login</h2>
-        <input type="text" id="username" placeholder="Username">
-        <input type="password" id="password" placeholder="Password">
-        <button onclick="login()">Login</button>
-        <p id="message" style="color: red;"></p>
+      <h2>Login</h2>
+      <input type="text" id="username" placeholder="Username" />
+      <input type="password" id="password" placeholder="Password" />
+      <button onclick="login()">Login</button>
+      <p id="message" style="color: red"></p>
     </div>
 
     <script>
-        function login() {
-            const username = document.getElementById('username').value;
-            const password = document.getElementById('password').value;
+      function login() {
+        const username = document.getElementById("username").value;
+        const password = document.getElementById("password").value;
 
-            fetch('/leave_mgmt/login', {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                credentials: 'include',  // Ensure cookies are sent with the request
-                body: JSON.stringify({ username, password })
-            })
-                .then(response => {
-                    if (!response.ok) {
-                        throw new Error('Invalid credentials');
-                    }
-                    return response.json();
-                })
-                .then(() => {
-                    window.location.href = '/leave_mgmt/dashboard';
-                })
-                .catch(err => {
-                    document.getElementById('message').innerText = 'Login failed: ' + err.message;
-                });
-        }
+        fetch("/leave_mgmt/login", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          credentials: "include", // Ensure cookies are sent with the request
+          body: JSON.stringify({ username, password }),
+        })
+          .then((response) => {
+            if (!response.ok) {
+              throw new Error("Invalid credentials");
+            }
+
+            return response.json();
+          })
+          .then((data) => {
+            localStorage.setItem("token", data.token);
+            window.location.href = "/leave_mgmt/dashboard";
+          })
+          .catch((err) => {
+            document.getElementById("message").innerText =
+              "Login failed: " + err.message;
+          });
+      }
     </script>
-</body>
-
+  </body>
 </html>

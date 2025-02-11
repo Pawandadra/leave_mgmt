@@ -6,6 +6,8 @@ const session = require("express-session");
 const MySQLStore = require("express-mysql-session")(session);
 const md5 = require("md5");
 const path = require("path");
+const jwt = require("jsonwebtoken");
+const verifyDepartment = require("./middlewares/verifyDepartment");
 require("dotenv").config();
 
 const port = process.env.PORT;
@@ -66,9 +68,17 @@ app.post("/leave_mgmt/login", async (req, res) => {
       [username, hashedPassword]
     );
 
+    console.log(users);
+
     if (users.length === 0) {
       return res.status(401).json({ error: "Invalid credentials" });
     }
+
+    const departmentId = users[0].department_id;
+    const token = jwt.sign(
+      { departmentId: departmentId },
+      process.env.SESSION_SECRET
+    );
 
     // Store user session data
     req.session.user = {
@@ -76,7 +86,7 @@ app.post("/leave_mgmt/login", async (req, res) => {
       username: users[0].username,
     };
 
-    res.json({ message: "Login successful" });
+    res.json({ message: "Login successful", token });
   } catch (err) {
     console.error(err);
     res.status(500).json({ error: "Login failed" });
@@ -98,9 +108,14 @@ app.get("/leave_mgmt/dashboard", authenticateSession, (req, res) => {
 });
 
 // Route: Get all faculty leave data
-app.get("/leave_mgmt/get-leaves", authenticateSession, async (req, res) => {
-  try {
-    const [rows] = await pool.query(`
+app.get(
+  "/leave_mgmt/get-leaves",
+  authenticateSession,
+  verifyDepartment,
+  async (req, res) => {
+    try {
+      const [rows] = await pool.query(
+        `
       SELECT 
         faculty.id, 
         faculty.faculty_name, 
@@ -117,15 +132,19 @@ app.get("/leave_mgmt/get-leaves", authenticateSession, async (req, res) => {
         faculty.total_leaves
       FROM faculty
       LEFT JOIN leaves ON faculty.id = leaves.faculty_id
+      WHERE faculty.department_id = ?
       GROUP BY faculty.id
       ORDER BY faculty.id;
-    `);
-    res.json(rows);
-  } catch (err) {
-    console.error(err);
-    res.status(500).json({ error: "Failed to fetch leave data" });
+    `,
+        [req.user.departmentId]
+      );
+      res.json(rows);
+    } catch (err) {
+      console.error(err);
+      res.status(500).json({ error: "Failed to fetch leave data" });
+    }
   }
-});
+);
 
 // Route: Add leave
 app.post("/leave_mgmt/add-leave", authenticateSession, async (req, res) => {
@@ -389,25 +408,36 @@ app.post("/leave_mgmt/add-leave", authenticateSession, async (req, res) => {
 });
 
 // Route: Add faculty
-app.post("/leave_mgmt/add-faculty", authenticateSession, async (req, res) => {
-  const { faculty_name, designation, granted_leaves } = req.body;
-  if (!faculty_name || !designation) {
-    return res.status(400).json({ error: "Missing required fields" });
-  }
-  try {
-    await pool.query(
-      `
-      INSERT INTO faculty (faculty_name, designation, granted_leaves, remaining_leaves)
-      VALUES (?, ?, ?, ?);
+app.post(
+  "/leave_mgmt/add-faculty",
+  authenticateSession,
+  verifyDepartment,
+  async (req, res) => {
+    const { faculty_name, designation, granted_leaves } = req.body;
+    if (!faculty_name || !designation) {
+      return res.status(400).json({ error: "Missing required fields" });
+    }
+    try {
+      await pool.query(
+        `
+      INSERT INTO faculty (faculty_name, designation, granted_leaves, remaining_leaves, department_id)
+      VALUES (?, ?, ?, ?, ?);
     `,
-      [faculty_name, designation, granted_leaves, granted_leaves]
-    );
-    res.json({ success: true });
-  } catch (err) {
-    console.error(err);
-    res.status(500).json({ error: "Failed to add faculty" });
+        [
+          faculty_name,
+          designation,
+          granted_leaves,
+          granted_leaves,
+          req.user.departmentId,
+        ]
+      );
+      res.json({ success: true });
+    } catch (err) {
+      console.error(err);
+      res.status(500).json({ error: "Failed to add faculty" });
+    }
   }
-});
+);
 
 // Route: Get faculty suggestions based on input
 app.get("/leave_mgmt/faculty-suggestions", async (req, res) => {
@@ -627,7 +657,12 @@ app.post(
   }
 );
 
-app.use("/leave_mgmt/pdf", authenticateSession, require("./routes/pdf"));
+app.use(
+  "/leave_mgmt/pdf",
+  authenticateSession,
+  verifyDepartment,
+  require("./routes/pdf")
+);
 
 // Start server
 app.listen(port, () => {
