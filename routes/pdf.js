@@ -74,12 +74,19 @@ router.get("/", async (req, res) => {
       return res.status(404).json({ error: "No leave data found." });
     }
 
+    const [department] = await pool.query(
+      `SELECT * FROM departments
+      WHERE department_id = ?`,
+      [req.user.departmentId]
+    );
+
     // Generate PDF
     const pdfBuffer = await generatePDF(
       faculty,
       leaveData,
       sanitizedFromDate,
-      sanitizedToDate
+      sanitizedToDate,
+      department[0].department_name
     );
     const pdf = Stream.Readable.from(pdfBuffer);
 
@@ -139,10 +146,17 @@ router.get("/all", async (req, res) => {
       return res.status(404).json({ error: "No faculty data found." });
     }
 
+    const [department] = await pool.query(
+      `SELECT * FROM departments
+      WHERE department_id = ?`,
+      [req.user.departmentId]
+    );
+
     // Generate PDFs
     const frontPage = await generateFrontPage(
       sanitizedFromDate,
-      sanitizedToDate
+      sanitizedToDate,
+      department[0].department_name
     );
     const pdfBuffers = [frontPage];
 
@@ -162,7 +176,8 @@ router.get("/all", async (req, res) => {
           faculty,
           leaveData,
           sanitizedFromDate,
-          sanitizedToDate
+          sanitizedToDate,
+          department[0].department_name
         );
         pdfBuffers.push(pdfBuffer);
       } catch (err) {

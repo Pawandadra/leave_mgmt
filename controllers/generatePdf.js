@@ -114,7 +114,13 @@ const footer = {
 };
 
 // Function to generate PDF
-async function generatePDF(faculty, leaveData, fromDate, toDate) {
+async function generatePDF(
+  faculty,
+  leaveData,
+  fromDate,
+  toDate,
+  departmentName
+) {
   fromDate = fromDate && format(new Date(fromDate), "dd/MM/yyyy");
   toDate = toDate && format(new Date(toDate), "dd/MM/yyyy");
   let sn = 1;
@@ -164,7 +170,7 @@ async function generatePDF(faculty, leaveData, fromDate, toDate) {
 
     content: [
       {
-        text: "Department Of Computer Science and Engineering",
+        text: `Department Of ${departmentName}`,
         style: "heading",
         alignment: "center",
         fontSize: 17,
@@ -264,7 +270,7 @@ async function generatePDF(faculty, leaveData, fromDate, toDate) {
 }
 
 // Function to generate front page
-async function generateFrontPage(fromDate, toDate) {
+async function generateFrontPage(fromDate, toDate, departmentName) {
   fromDate = fromDate && format(new Date(fromDate), "dd/MM/yyyy");
   toDate = toDate && format(new Date(toDate), "dd/MM/yyyy");
   let sn = 1;
@@ -284,7 +290,7 @@ async function generateFrontPage(fromDate, toDate) {
         width: "auto", // Allow the text to wrap automatically
       },
       {
-        text: "Department of Computer Science and Engineering",
+        text: `Department of ${departmentName}`,
         style: "heading",
         alignment: "center",
         margin: [0, 70, 0, 0],
