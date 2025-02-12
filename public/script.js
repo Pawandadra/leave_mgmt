@@ -499,4 +499,4 @@ document.querySelector(".to-date").value = new Date()
   .split("T")[0];
 
 document.querySelector(".heading--department-name").textContent =
-  localStorage.getItem("departmentName");
+  "Department of " + localStorage.getItem("departmentName");

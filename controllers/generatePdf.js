@@ -170,7 +170,7 @@ async function generatePDF(
 
     content: [
       {
-        text: `Department Of ${departmentName}`,
+        text: `Department of ${departmentName}`,
         style: "heading",
         alignment: "center",
         fontSize: 17,
@@ -290,7 +290,7 @@ async function generateFrontPage(fromDate, toDate, departmentName) {
         width: "auto", // Allow the text to wrap automatically
       },
       {
-        text: `Department of ${departmentName}`,
+        text: `Department of\n ${departmentName}`,
         style: "heading",
         alignment: "center",
         margin: [0, 70, 0, 0],
