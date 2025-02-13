@@ -206,7 +206,9 @@ async function generatePDF(
               const leaveType = `${leaveObj.leave_category
                 .replace(/_/g, " ")
                 .replace(/\b\w/g, (char) => char.toUpperCase())
-                .replace(/\bCasual Leaves\b/i, "Full Day Leave")} ${
+                .replace(/\bLeaves\b/i, "Leave")
+                .replace(/\bCasual Leaves\b/i, "Full Day Leave")
+                .replace(/\bMedical Leaves\b/i, "Medical/Maternity Leave")} ${
                 ((leaveObj.short_leave_from || leaveObj.half_leave_type) &&
                   `(${
                     leaveObj.half_leave_type
@@ -238,7 +240,8 @@ async function generatePDF(
               const leaveCategory = key
                 .replace(/_/g, " ")
                 .replace(/\b\w/g, (char) => char.toUpperCase())
-                .replace(/\bCasual Leaves\b/i, "Full Day Leave");
+                .replace(/\bCasual Leaves\b/i, "Full Day Leaves")
+                .replace(/\bMedical Leaves\b/i, "Medical/Maternity Leaves");
 
               return { text: `${leaveCategory}: ${value}`, fontSize: 12 };
             }),

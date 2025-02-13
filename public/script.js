@@ -84,7 +84,7 @@ document.addEventListener("DOMContentLoaded", () => {
                                   <option value="half_day_leaves">Half Day Leave</option>
                                   <option value="casual_leaves">Full Day Leave</option>
                                   <option value="academic_leaves">Academic Leave</option>
-                                  <option value="medical_leaves">Medical Leave</option>
+                                  <option value="medical_leaves">Medical/Maternity Leave</option>
                                   <option value="compensatory_leaves">Compensatory Leave</option>
                                   <option value="granted_leaves">Granted Leaves</option>
                               </select>

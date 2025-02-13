@@ -26,7 +26,8 @@ async function loadLeaveDetails() {
                 <td>${leave.leave_category
                   .replace(/_/g, " ")
                   .replace(/\b\w/g, (char) => char.toUpperCase())
-                  .replace(/\bCasual Leaves\b/i, "Full Day Leave")} 
+                  .replace(/\bCasual Leaves\b/i, "Full Day Leave")
+                  .replace(/\bMedical Leaves\b/i, "Medical/Maternity Leave")} 
                   ${
                     ((leave.short_leave_from || leave.half_leave_type) &&
                       `(${
