@@ -151,16 +151,6 @@ async function generatePDF(
 
   countCategories.remaining_leaves = faculty.remaining_leaves;
 
-  const nonZeroLeaves = Object.entries(faculty)
-    .filter(
-      ([key, value]) =>
-        key !== "id" &&
-        key !== "faculty_name" &&
-        key !== "designation" &&
-        Number(value) !== 0
-    )
-    .map(([key, value]) => [key, value]);
-
   const docDefinition = {
     // Page settings
     pageSize: "A4",
@@ -321,6 +311,91 @@ async function generateFrontPage(fromDate, toDate, departmentName) {
   return await generatePdfBuffer(pdfDoc);
 }
 
+async function generateOneDayReport(oneDayLeaveData, date, departmentName) {
+  let sn = 0;
+  const docDefinition = {
+    pageSize: "A4",
+    pageMargins: [40, 120, 40, 70],
+    header: header,
+    footer: footer,
+
+    content: [
+      {
+        text: `Department of ${departmentName}`,
+        style: "heading",
+        alignment: "center",
+        fontSize: 17,
+        bold: true,
+      },
+      {
+        table: {
+          widths: ["auto", "*"],
+          body: [
+            [
+              { text: `To`, margin: [0, 20, 0, 10] },
+              {
+                text: `${format(date, "dd/MM/yyyy")}`,
+                bold: true,
+                alignment: "right",
+                margin: [0, 20, 0, 10],
+              },
+            ],
+          ],
+        },
+        layout: "noBorders",
+        margin: [0, 20, 0, 0],
+      },
+      { text: `The Principal`, margin: [0, 0, 0, 20] },
+
+      {
+        table: {
+          headerRows: 1,
+          widths: ["auto", "*", "*"],
+          body: [
+            [
+              { text: "SN", style: "tableHeader" },
+              { text: "Leave Category", style: "tableHeader" },
+              { text: "Name", style: "tableHeader" },
+            ],
+            ...oneDayLeaveData.flatMap(([faculty, leaveData]) => {
+              if (!Array.isArray(leaveData)) return [];
+              return leaveData.map((leaveObj) => {
+                const leaveType = `${leaveObj.leave_category
+                  .replace(/_/g, " ")
+                  .replace(/\b\w/g, (char) => char.toUpperCase())
+                  .replace(/\bLeaves\b/i, "Leave")
+                  .replace(/\bCasual Leaves\b/i, "Full Day Leave")
+                  .replace(/\bMedical Leaves\b/i, "Medical/Maternity Leave")} ${
+                  leaveObj.short_leave_from || leaveObj.half_leave_type
+                    ? `(${
+                        leaveObj.half_leave_type
+                          ?.replace(/_/g, " ")
+                          .replace(/\b\w/g, (char) => char.toUpperCase()) ||
+                        leaveObj.short_leave_from +
+                          " to " +
+                          leaveObj.short_leave_to
+                      })`
+                    : ""
+                }`;
+
+                return [++sn, leaveType, faculty.faculty_name];
+              });
+            }),
+          ],
+        },
+      },
+    ],
+
+    styles: {
+      heading: { fontSize: 14, bold: true },
+      tableHeader: { bold: true, fillColor: "#f3f3f3", margin: [5, 5, 5, 5] },
+    },
+  };
+
+  const pdfDoc = printer.createPdfKitDocument(docDefinition);
+  return await generatePdfBuffer(pdfDoc);
+}
+
 function generatePdfBuffer(pdfDoc) {
   const pdfBuffers = [];
 
@@ -340,4 +415,4 @@ function generatePdfBuffer(pdfDoc) {
   });
 }
 
-module.exports = { generatePDF, generateFrontPage };
+module.exports = { generatePDF, generateFrontPage, generateOneDayReport };

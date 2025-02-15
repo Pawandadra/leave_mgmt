@@ -7,6 +7,8 @@ const mysql = require("mysql2");
 const generateFrontPage =
   require("../controllers/generatePdf").generateFrontPage;
 const generatePDF = require("../controllers/generatePdf").generatePDF;
+const generateOneDayReport =
+  require("../controllers/generatePdf").generateOneDayReport;
 
 const pool = mysql
   .createPool({
@@ -148,6 +150,22 @@ router.get("/all", async (req, res) => {
       return res.status(404).json({ error: "No faculty data found." });
     }
 
+    const designationPriority = {
+      Professor: 1,
+      "Associate Professor": 2,
+      "Assistant Professor": 3,
+      Clerk: 4,
+      "Lab Technician": 5,
+      "Lab Attendant": 6,
+      Attendant: 7,
+    };
+
+    rows.sort((a, b) => {
+      const designationComparison =
+        designationPriority[a.designation] - designationPriority[b.designation];
+      return designationComparison;
+    });
+
     const [department] = await pool.query(
       `SELECT * FROM departments
       WHERE department_id = ?`,
@@ -216,6 +234,88 @@ router.get("/all", async (req, res) => {
 
     readableStream.pipe(res);
     readableStream.on("end", () => res.end());
+  } catch (error) {
+    console.error("Error processing combined PDF request:", error);
+    res.status(500).json({ error: "Internal server error." });
+  }
+});
+
+// Route to get Todays (one day) report
+router.get("/todays-report", async (req, res) => {
+  console.log("req for todays report came");
+
+  try {
+    const today = new Date();
+    const date = today.toISOString().split("T")[0];
+
+    // Fetching faculty data
+    const [rows] = await pool.query(
+      `
+      SELECT 
+          faculty.id, 
+          faculty.faculty_name, 
+          faculty.designation,
+          faculty.remaining_leaves,
+          faculty.total_leaves
+      FROM faculty
+      LEFT JOIN leaves ON faculty.id = leaves.faculty_id
+      WHERE faculty.department_id = ?
+      GROUP BY faculty.id
+      ORDER BY 
+          faculty.designation DESC,
+          REGEXP_REPLACE(faculty.faculty_name, '^(Er\.|Dr\.|Mr\.|Ms\.|Prof\.|S\.|Er|Dr|Mr|Ms|Prof|S)\s*', '') ASC;
+    `,
+      [req.session.user.departmentId]
+    );
+
+    if (rows.length === 0) {
+      return res.status(404).json({ error: "No faculty data found." });
+    }
+
+    const [department] = await pool.query(
+      `SELECT * FROM departments
+      WHERE department_id = ?`,
+      [req.session.user.departmentId]
+    );
+
+    // Generate PDFs
+    const oneDayLeaveData = [];
+
+    for (const faculty of rows) {
+      try {
+        const [leaveData] = await pool.query(
+          `SELECT * FROM leaves l
+           LEFT JOIN leave_details ld ON l.id = ld.leave_id
+           WHERE l.faculty_id = ?
+           AND l.leave_date = ?`,
+          [faculty.id, date]
+        );
+        if (leaveData.length === 0) continue;
+
+        oneDayLeaveData.push([faculty, leaveData]);
+      } catch (err) {
+        console.error(`Error fetching leaveData for ${faculty.id} `, err);
+      }
+    }
+    console.log(oneDayLeaveData, "asagohan leavedata");
+
+    if (oneDayLeaveData.length === 0) {
+      return res
+        .status(404)
+        .json({ error: `No leave records found for today i.e. ${date}` });
+    }
+    const pdfBuffer = await generateOneDayReport(
+      oneDayLeaveData,
+      date,
+      department[0].department_name
+    );
+
+    const pdf = Stream.Readable.from(pdfBuffer);
+    pdf.pipe(res);
+    pdf.on("end", () => res.end());
+
+    res.setHeader("Content-Type", "application/pdf");
+    res.setHeader("Content-Disposition", `inline; filename="leave_data.pdf"`);
   } catch (error) {
     console.error("Error processing combined PDF request:", error);
     res.status(500).json({ error: "Internal server error." });

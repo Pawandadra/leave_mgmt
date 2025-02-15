@@ -137,6 +137,8 @@ app.get("/leave_mgmt/get-leaves", authenticateSession, async (req, res) => {
         SUM(CASE WHEN leave_category = 'academic_leaves' THEN 1 ELSE 0 END) AS academic_leaves,
         SUM(CASE WHEN leave_category = 'medical_leaves' THEN 1 ELSE 0 END) AS medical_leaves,
         SUM(CASE WHEN leave_category = 'compensatory_leaves' THEN 1 ELSE 0 END) AS compensatory_leaves,
+        SUM(CASE WHEN leave_category = 'earned_leaves' THEN 1 ELSE 0 END) AS earned_leaves,
+        SUM(CASE WHEN leave_category = 'without_payment_leaves' THEN 1 ELSE 0 END) AS without_payment_leaves,
         SUM(CASE WHEN leave_category = 'remaining_leaves' THEN 1 ELSE 0 END) AS remaining_leaves,
         faculty.remaining_leaves,
         faculty.granted_leaves,
@@ -170,6 +172,8 @@ app.post("/leave_mgmt/add-leave", authenticateSession, async (req, res) => {
     "compensatory_leaves",
     "remaining_leaves",
     "granted_leaves",
+    "earned_leaves",
+    "without_payment_leaves",
   ];
 
   if (!validLeaveCategories.includes(leave_category)) {

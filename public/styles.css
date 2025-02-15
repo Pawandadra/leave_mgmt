@@ -74,6 +74,14 @@ body {
 .headRight button:hover {
   background-color: #c82333;
 }
+
+.btn--todays-report {
+  background-color: #00aeff !important;
+}
+
+.btn--todays-report:hover {
+  background-color: #007bff !important;
+}
 /* Table Styling */
 .table-container {
   justify-items: center;

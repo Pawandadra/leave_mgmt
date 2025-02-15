@@ -52,6 +52,8 @@ document.addEventListener("DOMContentLoaded", () => {
 
   // Function to generate row HTML for each faculty
   function generateRowHTML(row, serialNumber) {
+    console.log(row);
+
     return `
               <tr data-id="${row.id}">
                   <td>${serialNumber}</td>
@@ -63,6 +65,8 @@ document.addEventListener("DOMContentLoaded", () => {
                   <td>${row.academic_leaves || 0}</td>
                   <td>${row.medical_leaves || 0}</td>
                   <td>${row.compensatory_leaves || 0}</td>
+                  <td>${row.earned_leaves || 0}</td>
+                  <td>${row.without_payment_leaves || 0}</td>
                   <td>${row.remaining_leaves || 0}</td>
                   <td>${row.granted_leaves || 0}</td>
                   <td>${parseFloat(row.total_leaves).toFixed(2)}</td>
@@ -74,7 +78,7 @@ document.addEventListener("DOMContentLoaded", () => {
                   </td>
               </tr>
               <tr class="leave-options-row" style="display: none;">
-                  <td colspan="13">
+                  <td colspan="15">
                       <div class="addLeaveOptions">
                           <div class="category nameofCategory">
                               <label class="insidelabel">Category:</label>
@@ -86,6 +90,8 @@ document.addEventListener("DOMContentLoaded", () => {
                                   <option value="academic_leaves">Academic Leave</option>
                                   <option value="medical_leaves">Medical/Maternity Leave</option>
                                   <option value="compensatory_leaves">Compensatory Leave</option>
+                                  <option value="earned_leaves">Earned Leave</option>
+                                  <option value="without_payment_leaves">Without Payment Leave</option>
                                   <option value="granted_leaves">Granted Leaves</option>
                               </select>
                               <div class="dynamic-option"></div>
@@ -500,3 +506,21 @@ document.querySelector(".to-date").value = new Date()
 
 document.querySelector(".heading--department-name").textContent =
   "Department of " + localStorage.getItem("departmentName");
+
+document
+  .querySelector(".btn--todays-report")
+  .addEventListener("click", async (e) => {
+    e.preventDefault();
+    console.log("Todays report requested...");
+    const res = await fetch(`/leave_mgmt/pdf/todays-report`);
+
+    if (!res.ok) {
+      console.error("Failed to fetch pdf.");
+      const error = await res.json();
+      return alert(error.error);
+    }
+
+    const blob = await res.blob();
+    const blobUrl = URL.createObjectURL(blob);
+    window.open(blobUrl, "_blank");
+  });
