@@ -350,12 +350,13 @@ async function generateOneDayReport(oneDayLeaveData, date, departmentName) {
       {
         table: {
           headerRows: 1,
-          widths: ["auto", "*", "*"],
+          widths: ["auto", "*", "*", "*"],
           body: [
             [
               { text: "SN", style: "tableHeader" },
+              { text: "Faculty Name", style: "tableHeader" },
+              { text: "Designation", style: "tableHeader" },
               { text: "Leave Category", style: "tableHeader" },
-              { text: "Name", style: "tableHeader" },
             ],
             ...oneDayLeaveData.flatMap(([faculty, leaveData]) => {
               if (!Array.isArray(leaveData)) return [];
@@ -378,7 +379,7 @@ async function generateOneDayReport(oneDayLeaveData, date, departmentName) {
                     : ""
                 }`;
 
-                return [++sn, leaveType, faculty.faculty_name];
+                return [++sn, faculty.faculty_name, faculty.designation, leaveType];
               });
             }),
           ],
