@@ -69,7 +69,7 @@ app.post("/leave_mgmt/login", async (req, res) => {
       [username, hashedPassword]
     );
 
-    console.log(users);
+    // console.log(users);
 
     if (users.length === 0) {
       return res.status(401).json({ error: "Invalid credentials" });

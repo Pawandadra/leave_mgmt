@@ -52,7 +52,7 @@ document.addEventListener("DOMContentLoaded", () => {
 
   // Function to generate row HTML for each faculty
   function generateRowHTML(row, serialNumber) {
-    console.log(row);
+    // console.log(row);
 
     return `
               <tr data-id="${row.id}">
@@ -511,7 +511,7 @@ document
   .querySelector(".btn--todays-report")
   .addEventListener("click", async (e) => {
     e.preventDefault();
-    console.log("Todays report requested...");
+    // console.log("Todays report requested...");
     const res = await fetch(`/leave_mgmt/pdf/todays-report`);
 
     if (!res.ok) {
