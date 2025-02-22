@@ -268,7 +268,11 @@ document.addEventListener("DOMContentLoaded", () => {
         loadTableData(); // Reload table data to reflect changes
         optionsRow.style.display = "none";
       })
-      .catch((error) => showError("Failed to add leave: " + error.message));
+      .catch((error) => {
+        console.log(error.message);
+
+        return showError("Failed to add leave: " + error.message);
+      });
   }
 
   // Function to display error messages

@@ -113,7 +113,15 @@ const footer = {
   ],
 };
 
-// Function to generate PDF
+/**
+ * Function to generate a single PDF
+ * @param {Object} faculty - Faculty Object
+ * @param {Array} leaveData - All the existing leave records
+ * @param {String} fromDate - Start date in PDF heading
+ * @param {String} toDate - End date in PDF heading
+ * @param {String} departmentName - FUll Department name
+ * @returns {Buffer}
+ */
 async function generatePDF(
   faculty,
   leaveData,
@@ -263,6 +271,13 @@ async function generatePDF(
 }
 
 // Function to generate front page
+/**
+ *
+ * @param {String} fromDate - Start date in title
+ * @param {String} toDate - End date in title
+ * @param {String} departmentName - Full Department name
+ * @returns {Buffer}
+ */
 async function generateFrontPage(fromDate, toDate, departmentName) {
   fromDate = fromDate && format(new Date(fromDate), "dd/MM/yyyy");
   toDate = toDate && format(new Date(toDate), "dd/MM/yyyy");
@@ -311,7 +326,16 @@ async function generateFrontPage(fromDate, toDate, departmentName) {
   return await generatePdfBuffer(pdfDoc);
 }
 
+/**
+ *
+ * @param {Array<Array<Object>>} oneDayLeaveData - Each nested array contains two Objects, First Object contains faculty details and the second object contains the leave details.
+ * @param {String} date - Date in the heading of the PDF
+ * @param {String} departmentName - Full Department name for the heading in the PDF
+ * @returns {Buffer}
+ */
 async function generateOneDayReport(oneDayLeaveData, date, departmentName) {
+  console.log(oneDayLeaveData);
+
   let sn = 0;
   const docDefinition = {
     pageSize: "A4",
@@ -379,7 +403,12 @@ async function generateOneDayReport(oneDayLeaveData, date, departmentName) {
                     : ""
                 }`;
 
-                return [++sn, faculty.faculty_name, faculty.designation, leaveType];
+                return [
+                  ++sn,
+                  faculty.faculty_name,
+                  faculty.designation,
+                  leaveType,
+                ];
               });
             }),
           ],
@@ -397,6 +426,11 @@ async function generateOneDayReport(oneDayLeaveData, date, departmentName) {
   return await generatePdfBuffer(pdfDoc);
 }
 
+/**
+ * Helper function for generating PDF Buffer
+ * @param {*} pdfDoc 
+ * @returns 
+ */
 function generatePdfBuffer(pdfDoc) {
   const pdfBuffers = [];
 

@@ -7,7 +7,10 @@ const MySQLStore = require("express-mysql-session")(session);
 const md5 = require("md5");
 const path = require("path");
 const cookieParser = require("cookie-parser");
+const { inSeconds, getDateRange } = require("./services/helpers");
+const checkLeaveOverlap = require("./services/leaveValidation");
 const { validateHeaderValue } = require("http");
+const { error } = require("console");
 require("dotenv").config();
 
 const port = process.env.PORT;
@@ -68,8 +71,6 @@ app.post("/leave_mgmt/login", async (req, res) => {
       "SELECT * FROM users WHERE username = ? AND password = ?",
       [username, hashedPassword]
     );
-
-    // console.log(users);
 
     if (users.length === 0) {
       return res.status(401).json({ error: "Invalid credentials" });
@@ -184,26 +185,51 @@ app.post("/leave_mgmt/add-leave", authenticateSession, async (req, res) => {
   }
 
   let connection;
+
+  let startDate, endDate;
+  if (Array.isArray(leave_date) && leave_date.length === 2) {
+    [startDate, endDate] = leave_date;
+  } else {
+    startDate = endDate = leave_date;
+  }
+
+  const leaveDates = getDateRange(startDate, endDate);
+  if (leaveDates.length === 0)
+    return res.status(400).json({ error: "Bad Request. Invalid date range!" });
+
   try {
     connection = await pool.getConnection();
     await connection.beginTransaction();
 
+    // Fetch all leaves for the given dates
+    const [allExistingLeaves] = await connection.query(
+      `SELECT id, leave_category, faculty_id, DATE_FORMAT(leave_date, '%d-%m-%Y') AS formatted_date 
+   FROM leaves 
+   WHERE faculty_id = ? AND leave_date IN (?)`,
+      [faculty_id, leaveDates]
+    );
+
+    const overlap = await checkLeaveOverlap(
+      leaveDates,
+      allExistingLeaves,
+      connection,
+      { leave_category, secLeaveOption }
+    );
+
+    if (overlap) {
+      return res.status(overlap.status).json({ error: overlap.error });
+    }
+
+    // Add Leave
     if (leave_category === "short_leaves") {
       if (!secLeaveOption.fromTime || !secLeaveOption.toTime) {
         return res.status(400).json({ error: "Bad Request: Invalid Time" });
       }
 
-      const [fromHours, fromMinutes, fromSeconds = 0] = secLeaveOption.fromTime
-        .split(":")
-        .map(Number);
-      const [toHours, toMinutes, toSeconds = 0] = secLeaveOption.toTime
-        .split(":")
-        .map(Number);
-      const fromTimeInSeconds =
-        fromHours * 60 * 60 + fromMinutes * 60 + fromSeconds;
-      const toTimeInSeconds = toHours * 60 * 60 + toMinutes * 60 + toSeconds;
+      const fromTimeInSeconds = inSeconds(secLeaveOption.fromTime);
+      const toTimeInSeconds = inSeconds(secLeaveOption.toTime);
 
-      if (fromTimeInSeconds > toTimeInSeconds) {
+      if (fromTimeInSeconds >= toTimeInSeconds) {
         return res.status(400).json({ error: "Bad Request, Invalid time." });
       }
 
@@ -397,18 +423,6 @@ app.post("/leave_mgmt/add-leave", authenticateSession, async (req, res) => {
       }
 
       await Promise.all(leaveInserts);
-
-      // await connection.query(
-      //   `
-      //   UPDATE faculty
-      //   SET
-      //     total_leaves = total_leaves + ?,
-      //     remaining_leaves = remaining_leaves - ?
-      //   WHERE id = ?;
-      // `,
-      //   [days, days, faculty_id]
-      // );
-
       await connection.commit();
       return res.json({ status: "success" });
     }
