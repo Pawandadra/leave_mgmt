@@ -20,6 +20,7 @@ body {
   color: #fff;
   padding: 20px;
   border-bottom: 4px solid #01497c;
+  position: relative; /* for add user form*/
 }
 
 .headLeft img {
@@ -34,8 +35,171 @@ body {
 
   filter: drop-shadow(0 0 0.35rem rgb(244, 250, 255));
   border-radius: 50%;
+  position: relative;
 }
 
+/* Dropdown Container */
+.dropdown {
+  position: relative;
+  display: inline-block;
+  z-index: 90;
+  width: 150px;
+  position: absolute;
+  top: 50%;
+  transform: translateY(-50%);
+  left: 200px;
+  display: none;
+}
+
+/* Dropdown Toggle Button */
+.dropdown-toggle {
+  width: 100%;
+  padding: 10px;
+  background: #00aeff;
+  color: white;
+  border: none;
+  border-radius: 5px;
+  cursor: pointer;
+  text-align: center;
+  font-size: 16px;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
+.dropdown-toggle:hover {
+  background: #2980b9;
+}
+
+/* Dropdown Menu */
+.dropdown-menu {
+  position: absolute;
+  color: #333;
+  width: 100%;
+  background: white;
+  border: 1px solid #ccc;
+  border-radius: 5px;
+  display: none;
+
+  max-height: 200px;
+  overflow-y: auto;
+  box-shadow: 0px 5px 10px rgba(0, 0, 0, 0.2);
+}
+
+.dropdown-menu.active {
+  display: block;
+}
+
+/* Dropdown Items */
+.dropdown-menu li {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 10px;
+  transition: background 0.2s;
+}
+
+.dropdown-menu li:hover {
+  background: #f0f0f0;
+}
+
+/* Delete Button */
+.delete-btn {
+  color: red;
+  font-size: 14px;
+  cursor: pointer;
+  padding: 5px;
+  border-radius: 5px;
+  transition: background 0.2s;
+}
+
+.delete-btn:hover {
+  background: rgba(255, 0, 0, 0.1);
+}
+
+.add-user-option {
+  cursor: pointer;
+}
+
+/* Add User Form */
+.form-container {
+  margin-top: 20px;
+  display: flex;
+  justify-content: center;
+  position: absolute;
+  top: 110%;
+  left: 250px;
+  z-index: 100;
+}
+
+.add-user-form {
+  width: 300px;
+  padding: 20px;
+  background: #fff;
+  border-radius: 8px;
+  box-shadow: 0px 4px 10px rgba(0, 0, 0, 0.1);
+  /* display: flex;
+  flex-direction: column; */
+  /* gap: 10px; */
+}
+
+.add-user-form input {
+  width: 100% !important;
+  margin-inline: 0 !important;
+  padding: 10px;
+  border: 1px solid #ccc;
+  border-radius: 5px;
+  font-size: 14px;
+}
+
+.add-user-form-btns {
+  width: 100%;
+  display: flex;
+  gap: 10px;
+}
+.add-user-form button {
+  width: 50%;
+  margin-top: 10px;
+  padding: 10px;
+  border: none;
+  border-radius: 5px;
+  cursor: pointer;
+  font-size: 16px;
+  display: inline;
+}
+
+#submit-user {
+  background: #27ae60;
+  color: white;
+}
+
+#submit-user:hover {
+  background: #219150;
+}
+
+#cancel-user {
+  background: #e74c3c;
+  color: white;
+}
+
+#cancel-user:hover {
+  background: #c0392b;
+}
+
+/* Mobile Optimization */
+@media (max-width: 480px) {
+  .dropdown {
+    width: 100%;
+  }
+
+  .dropdown-menu {
+    width: 100%;
+  }
+
+  .add-user-form {
+    width: 90%;
+  }
+}
 .headData h1,
 .headData h2,
 .headData h3 {

@@ -11,6 +11,7 @@ const { inSeconds, getDateRange } = require("./services/helpers");
 const checkLeaveOverlap = require("./services/leaveValidation");
 const { validateHeaderValue } = require("http");
 const { error } = require("console");
+const { verify } = require("crypto");
 require("dotenv").config();
 
 const port = process.env.PORT;
@@ -81,6 +82,7 @@ app.post("/leave_mgmt/login", async (req, res) => {
       id: users[0].id,
       username: users[0].username,
       departmentId: users[0].department_id,
+      isAdmin: users[0].role === "admin",
     };
 
     const [department] = await pool.query(
@@ -92,6 +94,7 @@ app.post("/leave_mgmt/login", async (req, res) => {
     res.json({
       message: "Login successful",
       departmentName: department[0].department_name,
+      role: users[0].role,
     });
   } catch (err) {
     console.error(err);
@@ -118,10 +121,104 @@ const authenticateSession = (req, res, next) => {
 };
 exports.authenticateSession = authenticateSession;
 
+// Middleware to verify admin
+const verifyAdmin = (req, res, next) => {
+  if (!req.session.user.isAdmin) {
+    return res.status(401).json({ error: "Unauthorized. Please log in." });
+  }
+  next();
+};
 // Serve dashboard after authentication
 app.get("/leave_mgmt/dashboard", authenticateSession, (req, res) => {
   res.sendFile(path.join(__dirname, "public", "main.html"));
 });
+
+//Route to get all users
+app.get(
+  "/leave_mgmt/all-users",
+  authenticateSession,
+  verifyAdmin,
+  async (req, res) => {
+    try {
+      const [rows] = await pool.query(
+        `SELECT username, id from users WHERE department_id = ? AND role = ?`,
+        [req.session.user.departmentId, "user"]
+      );
+      res.status(200).json(rows);
+    } catch (error) {
+      console.error("An Error occurred: ", error);
+    }
+  }
+);
+
+app.post(
+  "/leave_mgmt/add-user",
+  authenticateSession,
+  verifyAdmin,
+  async (req, res) => {
+    const { username, password } = req.body;
+
+    if (!username || !password) {
+      return res.status(400).json({ error: "Missing requird fields." });
+    }
+
+    try {
+      const [rows] = await pool.query(
+        `SELECT * FROM users WHERE username = ?`,
+        [username]
+      );
+
+      if (rows.length !== 0) {
+        return res
+          .status(400)
+          .json({ error: "Duplicate Entry, User already exists." });
+      }
+      await pool.query(
+        `INSERT INTO users(username, password, department_id) VALUES (?, md5(?), ?)`,
+        [username, password, req.session.user.departmentId]
+      );
+
+      res
+        .status(200)
+        .json({ success: true, message: "New user added successfully" });
+    } catch (err) {
+      console.error(err);
+      res.status(500).json({ error: "Failed to add new user" });
+    }
+  }
+);
+
+app.delete(
+  "/leave_mgmt/delete-user/:username",
+  authenticateSession,
+  verifyAdmin,
+  async (req, res) => {
+    const { username } = req.params;
+
+    let connection;
+    try {
+      connection = await pool.getConnection();
+      await connection.beginTransaction();
+
+      // Delete from users table
+      await connection.query(
+        "DELETE FROM users WHERE username = ? and department_id = ?",
+        [username, req.session.user.departmentId]
+      );
+      await connection.commit();
+      res.json({
+        success: true,
+        message: "User deleted successfully.",
+      });
+    } catch (err) {
+      if (connection) await connection.rollback();
+      console.error(err);
+      res.status(500).json({ error: "Failed to delete faculty." });
+    } finally {
+      if (connection) connection.release();
+    }
+  }
+);
 
 // Route: Get all faculty leave data
 app.get("/leave_mgmt/get-leaves", authenticateSession, async (req, res) => {

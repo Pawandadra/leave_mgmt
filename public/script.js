@@ -1,4 +1,127 @@
 document.addEventListener("DOMContentLoaded", () => {
+  if (localStorage.getItem("ROLE") === "admin")
+    document.querySelector(".dropdown").style.display = "block";
+
+  const updateUsers = async () => {
+    const res = await fetch("/leave_mgmt/all-users");
+
+    if (!res.ok) {
+      console.log("Error fetching users.");
+      return;
+    }
+
+    const data = await res.json();
+    console.log(data);
+    const dropdownMenu = document.querySelector(".dropdown-menu");
+    dropdownMenu.innerHTML = ""; // Clear previous users
+
+    data.forEach((user) => {
+      dropdownMenu.insertAdjacentHTML(
+        "beforeend",
+        `<li>
+          <span class="username">${user.username}</span>
+          <span class="delete-btn" data-username="${user.username}">🗑️</span>
+        </li>`
+      );
+    });
+
+    // Add "Add User" option
+    dropdownMenu.insertAdjacentHTML(
+      "beforeend",
+      `<li class="add-user-option">➕ Add User</li>`
+    );
+
+    // Hide dropdown when clicking outside
+    const dropdown = document.querySelector(".dropdown");
+
+    document.addEventListener("click", (event) => {
+      if (!dropdown.contains(event.target)) {
+        dropdownMenu.classList.remove("active"); // Hide dropdown
+      }
+    });
+
+    // Add event listeners
+    document.querySelectorAll(".delete-btn").forEach((btn) => {
+      btn.addEventListener("click", (e) => {
+        const username = e.target.dataset.username;
+        deleteUser(username);
+      });
+    });
+
+    document.querySelector(".add-user-option").addEventListener("click", () => {
+      showAddUserForm();
+    });
+  };
+
+  // Toggle dropdown menu
+  document.querySelector(".dropdown-toggle").addEventListener("click", () => {
+    document.querySelector(".dropdown-menu").classList.toggle("active");
+  });
+
+  // Show Add User Form
+  const showAddUserForm = () => {
+    document.querySelector(".form-container").innerHTML = `
+      <div class="add-user-form">
+        <input type="text" id="new-username" placeholder="Username" required />
+        <input type="password" id="new-password" placeholder="Password" required />
+        <div class="add-user-form-btns">
+         <button id="submit-user">Add</button> <button id="cancel-user">Cancel</button>
+        </div>
+       
+      </div>
+    `;
+
+    document
+      .querySelector("#submit-user")
+      .addEventListener("click", async () => {
+        const username = document.querySelector("#new-username").value.trim();
+        const password = document.querySelector("#new-password").value.trim();
+
+        if (!username || !password) {
+          alert("Please fill all fields!");
+          return;
+        }
+
+        const res = await fetch("/leave_mgmt/add-user", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ username, password }),
+        });
+
+        const data = await res.json();
+        if (res.ok) {
+          alert("User added!");
+          document.querySelector(".add-user-form").remove();
+          updateUsers(); // Refresh list
+        } else {
+          alert(data.error);
+        }
+      });
+
+    document.querySelector("#cancel-user").addEventListener("click", () => {
+      document.querySelector(".add-user-form").remove();
+    });
+  };
+
+  // Delete User Function
+  const deleteUser = async (username) => {
+    if (!confirm(`Delete ${username}?`)) return;
+
+    const res = await fetch(`/leave_mgmt/delete-user/${username}`, {
+      method: "DELETE",
+    });
+
+    if (res.ok) {
+      alert("User deleted!");
+      updateUsers(); // Refresh list
+    } else {
+      alert("Error deleting user!");
+    }
+  };
+
+  // Initial call to load users
+  if (localStorage.getItem("ROLE") === "admin") updateUsers();
+
   const designationPriority = {
     Professor: 1,
     "Associate Professor": 2,
