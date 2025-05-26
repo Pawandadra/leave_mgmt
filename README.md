@@ -195,5 +195,7 @@ pm2 startup
 ---
 
 **Maintainers:**
-- Project Owner: Pawan Kumar
-- Contact: pawankumarpk3610@gmail.com
+- Project Owner: Pawan Kumar [pawankumarpk3610@gmail.com](mailto:pawankumarpk3610@gmail.com)
+- Contributors :
+  1. Ankur Paul [ankurpaul27@proton.me](mailto:ankurpaul27@proton.me)
+  2. Arsh [arshanand0527@gmail.com](mailto:arshanand0527@gmail.com)
